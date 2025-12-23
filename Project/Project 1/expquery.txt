@@ -1,0 +1,11 @@
+def expand_query_with_wordnet(query):
+    expanded_query = []
+    for word in query.split():
+        if word in stopwords:
+            continue
+        synsets = wn.synsets(word)
+        for synset in synsets:
+            for lemma in synset.lemmas():
+                # Append lemma name along with its part of speech
+                expanded_query.append((lemma.name(), synset.pos()))
+    return expanded_query

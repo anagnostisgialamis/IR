@@ -1,0 +1,50 @@
+import nltk
+from nltk.corpus import wordnet as wn
+import networkx as nx
+
+# Download WordNet data (only required once)
+nltk.download('wordnet')
+
+# Function to expand a query using WordNet
+def expand_query_with_wordnet(query):
+    expanded_query = []
+    for word in query.split():
+        synsets = wn.synsets(word)
+        for synset in synsets:
+            for lemma in synset.lemmas():
+                expanded_query.append(lemma.name())
+    return expanded_query
+
+# Function to filter expanded terms using a Term Semantic Network
+def filter_expanded_terms_with_semantic_network(expanded_query):
+    # Construct a simple semantic network based on semantic similarity
+    # You can replace this with a more sophisticated network based on your requirements
+    G = nx.Graph()
+    for term1 in expanded_query:
+        for term2 in expanded_query:
+            if term1 != term2 and wn.synsets(term1) and wn.synsets(term2):
+                similarity = wn.synset(term1 + '.n.01').path_similarity(wn.synset(term2 + '.n.01'))
+                if similarity is not None:
+                    G.add_edge(term1, term2, weight=similarity)
+
+    # Filter expanded terms based on network properties, e.g., centrality
+    # Here, we'll just keep terms with highest degree centrality
+    central_nodes = sorted(nx.degree_centrality(G).items(), key=lambda x: x[1], reverse=True)[:5]
+    filtered_terms = [node for node, centrality in central_nodes]
+
+    return filtered_terms
+
+# Sample query
+query = "computer science"
+
+# Step 1: Expand query with WordNet
+expanded_query = expand_query_with_wordnet(query)
+
+# Step 2: Filter expanded terms using a Term Semantic Network
+filtered_terms = filter_expanded_terms_with_semantic_network(expanded_query)
+
+# Step 3: Combine original query with filtered expanded terms to form the final expanded query
+final_expanded_query = query.split() + filtered_terms
+
+print("Original Query:", query)
+print("Final Expanded Query:", final_expanded_query)

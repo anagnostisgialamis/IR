@@ -1,0 +1,28 @@
+def filter_expanded_terms_with_semantic_network(expanded_query):
+    # Construct a simple semantic network based on semantic similarity
+    # You can replace this with a more sophisticated network based on your requirements
+    G = nx.Graph()
+    for term1, pos1 in expanded_query:
+        for term2, pos2 in expanded_query:
+            if term1 != term2 and pos1 == 'n' and pos2 == 'n':  # Ensure both terms are nouns
+                similarity = wn.synset(term1 + '.n.01').path_similarity(wn.synset(term2 + '.n.01'))
+                if similarity is not None:
+                    G.add_edge(term1, term2, weight=similarity)
+            elif term1 != term2 and pos1 == 'v' and pos2 == 'v':  # Ensure both terms are verbs
+                similarity = wn.synset(term1 + '.v.01').path_similarity(wn.synset(term2 + '.v.01'))
+                if similarity is not None:
+                    G.add_edge(term1, term2, weight=similarity)
+            elif term1 != term2 and pos1 == 'a' and pos2 == 'a':  # Ensure both terms are adjectives
+                similarity=wn.synset(term1 + '.a.01').path_similarity(wn.synset(term2 + '.a.01'))
+                if similarity is not None:
+                    G.add_edge(term1, term2, weight=similarity)
+            elif term1 != term2 and pos1 == 'r' and pos2 == 'r':  # Ensure both terms are adverbs
+                similarity=wn.synset(term1 + '.r.01').path_similarity(wn.synset(term2 + '.r.01'))
+                if similarity is not None:
+                    G.add_edge(term1, term2, weight=similarity)
+    # Filter expanded terms based on network properties, e.g., centrality
+    # Here, we'll just keep terms with highest degree centrality
+    central_nodes = sorted(nx.degree_centrality(G).items(), key=lambda x: x[1], reverse=True)[:5]
+    filtered_terms = [node for node, centrality in central_nodes]
+
+    return filtered_terms
